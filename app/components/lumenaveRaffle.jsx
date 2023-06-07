@@ -29,9 +29,7 @@ export default function LumenaveRaffle() {
   const height = 60;
 
   const fetchContestants = async () => {
-    const response = await fetch(
-      "https://wolf-raffle-draw.vercel.app/api/staff"
-    );
+    const response = await fetch("/api/staff");
     const data = await response.json();
     setNames(data);
   };
@@ -73,12 +71,9 @@ export default function LumenaveRaffle() {
 
     if (hasConfirmed) {
       try {
-        await fetch(
-          `https://wolf-raffle-draw.vercel.app/api/staff/${staff._id.toString()}`,
-          {
-            method: "DELETE",
-          }
-        );
+        await fetch(`/api/staff/${staff._id.toString()}`, {
+          method: "DELETE",
+        });
 
         const nextContestants = names.filter((item) => item._id !== staff._id);
 
