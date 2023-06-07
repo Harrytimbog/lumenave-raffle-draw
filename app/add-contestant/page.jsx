@@ -15,12 +15,15 @@ const createStaff = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/staff/new", {
-        method: "POST",
-        body: JSON.stringify({
-          name: post.name,
-        }),
-      });
+      const response = await fetch(
+        "https://wolf-raffle-draw.vercel.app/api/staff/new",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: post.name,
+          }),
+        }
+      );
 
       if (response.ok) {
         router.push("/");
