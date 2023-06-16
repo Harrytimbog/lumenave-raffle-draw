@@ -15,11 +15,13 @@ import HeadingImage from "../images/lumenave_logo.png";
 import Play from "../images/play.svg";
 import Reshuffle from "../images/reshuffle.svg";
 import Replay from "../images/replay.svg";
-import { BsPerson } from "react-icons/bs";
+import { BsGift, BsPerson } from "react-icons/bs";
 
 export default function LumenaveRaffle() {
   const router = useRouter();
-  const [names, setNames] = useState([]);
+  const [prizes, setPrizes] = useState([]);
+  const [player, setPlayer] = useState("");
+  const [gameStarted, setGameStarted] = useState(false);
   const [initialLoad, setInitialLoad] = useState(false);
   const [windowHeight, setWindowHeight] = useState(null);
   const [windowWidth, setWindowWidth] = useState(null);
@@ -28,18 +30,25 @@ export default function LumenaveRaffle() {
   const confettiWrapper = useRef(null);
   const height = 60;
 
-  const fetchContestants = async () => {
-    const response = await fetch("/api/staff");
+  const fetchPrizes = async () => {
+    const response = await fetch("/api/prize");
     const data = await response.json();
-    setNames(data);
+    setPrizes(data);
   };
 
+  // set Player
+
+  // const handlePlayer = (e) => {
+  //   e.preventDefault();
+  //   setPlayer(player);
+  // };
+
   useEffect(() => {
-    fetchContestants();
+    fetchPrizes();
   }, []);
 
   const transitions = useTransition(
-    names.map((data, i) => ({ ...data, y: 0.5 * i })),
+    prizes.map((data, i) => ({ ...data, y: 0.5 * i })),
     (d) => d.name,
     {
       from: { position: "initial", opacity: 0 },
@@ -53,31 +62,34 @@ export default function LumenaveRaffle() {
   );
 
   const startRaffle = useCallback(() => {
-    if (names.length <= 1) {
+    setGameStarted(true);
+    if (prizes.length <= 1) {
       setWraffling(true);
       setShowConfetti(true);
       return;
     }
-    const randomIndex = Math.floor(Math.random() * names.length);
-    const filterOutNames = names.filter((name) => name !== names[randomIndex]);
-    setNames(filterOutNames);
+    const randomIndex = Math.floor(Math.random() * prizes.length);
+    const filterOutNames = prizes.filter(
+      (name) => name !== prizes[randomIndex]
+    );
+    setPrizes(filterOutNames);
     setInitialLoad(true);
-  }, [names]);
+  }, [prizes]);
 
-  const deleteContestant = async (staff) => {
+  const removePrize = async (prize) => {
     const hasConfirmed = confirm(
-      `Are you sure you want to remove ${staff.name} ?`
+      `Are you sure you want to remove ${prize.name} ?`
     );
 
     if (hasConfirmed) {
       try {
-        await fetch(`/api/staff/${staff._id.toString()}`, {
+        await fetch(`/api/prize/${prize._id.toString()}`, {
           method: "DELETE",
         });
 
-        const nextContestants = names.filter((item) => item._id !== staff._id);
+        const prizesToWin = prizes.filter((item) => item._id !== prize._id);
 
-        setNames(nextContestants);
+        setPrizes(prizesToWin);
       } catch (error) {
         console.log(error);
       }
@@ -92,9 +104,11 @@ export default function LumenaveRaffle() {
 
   const restartRaffle = () => {
     setInitialLoad(false);
-    fetchContestants();
-    // deleteContestant();
-    setNames(names);
+    fetchPrizes();
+    // removePrize();
+    setGameStarted(false);
+    setPrizes(prizes);
+    setPlayer("");
     setWraffling(false);
     setShowConfetti(false);
   };
@@ -108,7 +122,7 @@ export default function LumenaveRaffle() {
         clearTimeout(filteringTimer);
       };
     }
-  }, [initialLoad, names, startRaffle]);
+  }, [initialLoad, prizes, startRaffle]);
 
   useEffect(() => {
     setWindowHeight(confettiWrapper.current.clientHeight);
@@ -120,22 +134,42 @@ export default function LumenaveRaffle() {
       <div className="raffle-header">
         <Image width={200} src={HeadingImage} alt="heading logo" />
         {/* <h1>LUMENAVE INTERNATIONAL LIMITED RAFFLE DRAW</h1> */}
+        {player && !gameStarted && (
+          <h1>Welcome {player}, You can shuffle and try your luck </h1>
+        )}
         {!initialLoad && (
           <div className="raffle-header__buttons">
+            <div>
+              <form className="mt-4">
+                <label className="text-white">
+                  Enter your name:
+                  <input
+                    className="mx-3 text-black p-2 rounded-lg"
+                    type="text"
+                    value={player}
+                    onChange={(e) => setPlayer(e.target.value)}
+                  />
+                </label>
+                {/* <input
+                  className="bg-black px-3 py-2 ml-2 rounded-xl text-white"
+                  type="submit"
+                /> */}
+              </form>
+            </div>
             <button className="button-primary" onClick={startRaffle}>
               <Image src={Play} alt="heading logo" />
               Start Raffle
             </button>
             <button
               className="button-outline"
-              onClick={() => setNames(shuffle(names))}
+              onClick={() => setPrizes(shuffle(prizes))}
             >
               <Image src={Reshuffle} alt="heading logo" />
               Shuffle
             </button>
             <button className="bg-black py-2 px-11 rounded-full flex gap-2 items-center">
-              <h4 className="text-white">{names.length}</h4>
-              <BsPerson color="white" size={20} />
+              <h4 className="text-white">{prizes.length}</h4>
+              <BsGift color="white" size={20} />
             </button>
           </div>
         )}
@@ -160,7 +194,7 @@ export default function LumenaveRaffle() {
             }}
           >
             <div className="raffle-namelist cursor-pointer">
-              <span onClick={() => deleteContestant(item)}>{item.name}</span>
+              <span onClick={() => removePrize(item)}>{item.name}</span>
             </div>
           </animated.div>
         ))}
@@ -169,9 +203,10 @@ export default function LumenaveRaffle() {
         2
         {showConfetti && (
           <div className="raffle-ends">
-            {names.length === 1 ? (
+            {prizes.length === 1 ? (
               <h3 className="mb-4">
-                Congratulations! {names[0]?.name} You have won the raffle!
+                Congratulations! {player} You have won {prizes[0]?.name} at the
+                raffle!
               </h3>
             ) : (
               <h3 className="mb-4">This round is over</h3>

@@ -1,4 +1,4 @@
-import Staff from "@/app/models/staff";
+import Prize from "@/app/models/prize";
 import { connectToDB } from "@/app/utils/database";
 
 export const POST = async (request) => {
@@ -6,7 +6,7 @@ export const POST = async (request) => {
 
   try {
     await connectToDB();
-    const newContestant = new Staff({ name });
+    const newContestant = new Prize({ name });
 
     await newContestant.save();
     return new Response(JSON.stringify(newContestant), { status: 201 });

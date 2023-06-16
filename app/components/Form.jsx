@@ -4,7 +4,7 @@ const Form = ({ type, post, setPost, submitting, handleSubmit }) => {
   return (
     <section className="w-full max-w-full flex-start flex-col">
       <h1 className="head_text text-left mt-10 ml-3 text-gray-400">
-        <span className="blue_gradient">{type} Contestant</span>
+        <span className="blue_gradient">{type} Prize</span>
       </h1>
       {/* <p className="desc text-left max-w-md">
         {type} and share amazing prompts with the world, and let your
@@ -17,13 +17,13 @@ const Form = ({ type, post, setPost, submitting, handleSubmit }) => {
       >
         <label>
           <span className="font-satoshi font-semibold text-base text-gray-700 m-4">
-            Name of Contestant
+            Name of Prize to be won
           </span>
           <input
             value={post.name}
             onChange={(e) => setPost({ name: e.target.value })}
             type="text"
-            placeholder="Name of contestant"
+            placeholder="Name of prize"
             required
             className="form_input px-4 py-1 rounded-full"
           />
